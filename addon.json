@@ -1,0 +1,11 @@
+{
+	"title"		:	"RagMod Grapple hook",
+	"type"		:	"tool",
+	"tags"		:	[ "fun" ],
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*"
+	]
+}

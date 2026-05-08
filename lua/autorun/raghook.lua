@@ -1,9 +1,63 @@
 if CLIENT then
-    CreateClientConVar("rm_hook_client_enable",1,true,true,"Toggles hook functionality for you.",0,1)
-    CreateClientConVar("rm_hook_client_hook_default",1,true,true,"If one, on ragdollize you auto-equip hooks. If zero, you're in grabbing mode.",0,1)
+	CreateClientConVar("rm_hook_client_enable",1,true,true,"Toggles hook functionality for you.",0,1)
+	CreateClientConVar("rm_hook_client_hook_default",1,true,true,"If one, on ragdollize you auto-equip hooks. If zero, you're in grabbing mode.",0,1)
+	hook.Add( "AddToolMenuCategories", "CustomCategory", function()
+	spawnmenu.AddToolCategory( rmutil:GetPhrase("label.tab.ragmod"), "Raghook", "#Raghook" )
+	end )
+
+	hook.Add("PopulateToolMenu", "RaghookSettingsMenu", function()
+	spawnmenu.AddToolMenuOption(rmutil:GetPhrase("label.tab.ragmod"), "Raghook", "Raghook", "#Raghook", "", "", function(panel)
+		panel:AddControl("ComboBox", {
+			MenuButton = 1,
+		   	Folder = "raghook_presets",
+			Options = {
+				[ "default" ] = {
+					rm_ragdoll_mass = "200",
+					rm_hook_speed = "200",
+					rm_hook_constant = "800",
+					rm_hook_damping = "250",
+					rm_hook_enable = "1",
+					rm_hook_admin_only = "0",
+					rm_hook_length = "5000",
+					rm_hook_airacceleration = "100",
+					rm_hook_material = "cable/rope"
+				}
+			},
+			CVars = {
+				"rm_ragdoll_mass",
+				"rm_hook_speed",
+				"rm_hook_constant",
+				"rm_hook_damping",
+				"rm_hook_enable",
+				"rm_hook_admin_only",
+				"rm_hook_length",
+				"rm_hook_airacceleration",
+				"rm_hook_material"
+			}
+		})
+
+		panel:Help("Ragdoll Settings")
+		panel:NumSlider("Ragdoll Mass", "rm_ragdoll_mass", 1, 1000, 0)
+	
+		panel:ControlHelp("Too low = feather, too high = weak movement.")
+
+		panel:Help("Hook Settings")
+		panel:CheckBox("Enable Hook", "rm_hook_enable")
+		panel:CheckBox("Hooks for admins only", "rm_hook_admin_only")
+		panel:NumSlider("Hook Speed", "rm_hook_speed", 0, 1000, 0)
+		panel:NumSlider("Hook Constant", "rm_hook_constant", 0, 2000, 0)
+		panel:NumSlider("Hook Damping", "rm_hook_damping", 0, 1000, 0)
+		panel:NumSlider("Max Length", "rm_hook_length", 0, 10000, 0)
+		panel:NumSlider("Air Acceleration", "rm_hook_airacceleration", 0, 500, 0)
+
+		panel:TextEntry("Hook Material", "rm_hook_material")
+	end)
+end)
+
 else
 
 require("ragmod")
+require("ragmod_utils")
 
 CreateConVar("rm_ragdoll_mass", 200, FCVAR_NEVER_AS_STRING, "How much ragdoll weight. Too low makes ragdoll feel like a feather, and too much makes hooks pull, fedhoria moves and ragmod movement too weak.", 1)
 local speed = CreateConVar("rm_hook_speed", 200, FCVAR_NEVER_AS_STRING, "Changes the speed of hook attraction.")
@@ -13,8 +67,10 @@ local hook_material = CreateConVar("rm_hook_material", "cable/rope", 0, "Sets ma
 CreateConVar("rm_hook_enable", 1, FCVAR_NEVER_AS_STRING, "Enables rope shoot")
 local length = CreateConVar("rm_hook_length", 5000, FCVAR_NEVER_AS_STRING, "Available distance for hook")
 local airaccelerate = CreateConVar("rm_hook_airacceleration", 100, FCVAR_NEVER_AS_STRING, "The air movement power while grappling")
+local adminonly = CreateConVar("rm_hook_admin_only", 0, FCVAR_NEVER_AS_STRING, "Enable ragmod grabble hooks only for superadmin")
 
 cvars.AddChangeCallback("rm_hook_enable", function(_,_,n)
+	
 	if n == 1 then
 		hook.Add("RM_RagdollReady","ragmod_on_ragdoll", rm_hook_ragdoll)
 		hook.Add("KeyPress","ragmod_grabblehook", rm_hook_on_press)
@@ -123,6 +179,7 @@ function rm_hook_on_press(plr, key)
 	local key_attack = bit.band(key,1) == 1
 	local key_attack2 = bit.band(key,2048) == 2048
 	local key_toggle = bit.band(key,8192) == 8192
+	if (not plr:IsSuperAdmin() and adminonly:GetBool()) then return end
 	if not key_attack and not key_attack2 and not key_toggle then return end
 	local rag = ragmod:GetRagmodRagdoll(plr)
 	if not IsValid(rag) or not plr:Alive() or not rag.ragmod_enable_hooks then return end
@@ -171,7 +228,7 @@ function rm_hook_on_release(plr, key)
 		return
 	end
 	if not rag.grapples[left_arm] or not IsValid(rag.grapples[left_arm]) and not rag.grapples[right_arm] or not IsValid(rag.grapples[right_arm]) then
-	    hooked_players:RemovePlayer(plr)
+	  hooked_players:RemovePlayer(plr)
 	end
 	clear_ropes()
 	rag:EmitSound(returnsound)
@@ -189,8 +246,8 @@ function rm_hook_movement()
 	if plr:KeyDown(IN_MOVELEFT) then sideway = sideway - 1 end
 	local rag = ragmod:GetRagmodRagdoll(plr)
 	if not rag or not IsValid(rag) or not plr or not IsValid(plr) then
-	    hooked_players:RemovePlayer(plr)
-	    continue
+	  hooked_players:RemovePlayer(plr)
+	  continue
 	end
 	local boneid = rag:LookupBone("ValveBiped.Bip01_Spine")
 	rag:GetPhysicsObjectNum(rag:TranslateBoneToPhysBone(boneid)):AddVelocity(plr:GetAimVector() * forward * airaccelerate:GetInt())

@@ -1,3 +1,13 @@
+CreateConVar("rm_ragdoll_mass", 200, FCVAR_NEVER_AS_STRING, "How much ragdoll weight. Too low makes ragdoll feel like a feather, and too much makes hooks pull, fedhoria moves and ragmod movement too weak.", 1)
+local speed = CreateConVar("rm_hook_speed", 200, FCVAR_NEVER_AS_STRING, "Changes the speed of hook attraction.")
+local constant = CreateConVar("rm_hook_constant", 800, FCVAR_NEVER_AS_STRING, "Changes the constant of hook.")
+local damping = CreateConVar("rm_hook_damping", 250, FCVAR_NEVER_AS_STRING, "Changes the damping of hook.")
+local hook_material = CreateConVar("rm_hook_material", "cable/rope", 0, "Sets material of rope.")
+CreateConVar("rm_hook_enable", 1, FCVAR_NEVER_AS_STRING, "Enables rope shoot")
+local length = CreateConVar("rm_hook_length", 5000, FCVAR_NEVER_AS_STRING, "Available distance for hook")
+local airaccelerate = CreateConVar("rm_hook_airacceleration", 100, FCVAR_NEVER_AS_STRING, "The air movement power while grappling")
+local adminonly = CreateConVar("rm_hook_admin_only", 0, FCVAR_NEVER_AS_STRING, "Enable ragmod grabble hooks only for superadmin")
+
 if CLIENT then
 	CreateClientConVar("rm_hook_client_enable",1,true,true,"Toggles hook functionality for you.",0,1)
 	CreateClientConVar("rm_hook_client_hook_default",1,true,true,"If one, on ragdollize you auto-equip hooks. If zero, you're in grabbing mode.",0,1)
@@ -58,16 +68,6 @@ else
 
 require("ragmod")
 require("ragmod_utils")
-
-CreateConVar("rm_ragdoll_mass", 200, FCVAR_NEVER_AS_STRING, "How much ragdoll weight. Too low makes ragdoll feel like a feather, and too much makes hooks pull, fedhoria moves and ragmod movement too weak.", 1)
-local speed = CreateConVar("rm_hook_speed", 200, FCVAR_NEVER_AS_STRING, "Changes the speed of hook attraction.")
-local constant = CreateConVar("rm_hook_constant", 800, FCVAR_NEVER_AS_STRING, "Changes the constant of hook.")
-local damping = CreateConVar("rm_hook_damping", 250, FCVAR_NEVER_AS_STRING, "Changes the damping of hook.")
-local hook_material = CreateConVar("rm_hook_material", "cable/rope", 0, "Sets material of rope.")
-CreateConVar("rm_hook_enable", 1, FCVAR_NEVER_AS_STRING, "Enables rope shoot")
-local length = CreateConVar("rm_hook_length", 5000, FCVAR_NEVER_AS_STRING, "Available distance for hook")
-local airaccelerate = CreateConVar("rm_hook_airacceleration", 100, FCVAR_NEVER_AS_STRING, "The air movement power while grappling")
-local adminonly = CreateConVar("rm_hook_admin_only", 0, FCVAR_NEVER_AS_STRING, "Enable ragmod grabble hooks only for superadmin")
 
 cvars.AddChangeCallback("rm_hook_enable", function(_,_,n)
 	
